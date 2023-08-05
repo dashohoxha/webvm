@@ -1,0 +1,41 @@
+FROM --platform=i386 i386/debian:bookworm
+
+STOPSIGNAL SIGRTMIN+3
+
+### install systemd
+RUN apt update && apt -y upgrade
+RUN echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections
+RUN apt -y install systemd resolvconf
+RUN systemctl set-default multi-user.target
+
+CMD ["/lib/systemd/systemd"]
+
+RUN DEBIAN_FRONTEND=noninteractive && \
+    apt install -y \
+        rsyslog logrotate cron logwatch locales \
+        mandoc mlocate wbritish aspell sudo psmisc \
+        elinks highlight openssl bash-completion \
+        nano jed vim emacs wget curl iproute2 git \
+        systemd-sysv ssh udev iptables less \
+        tasksel tasksel-data
+
+### add user: (user1, pass1)
+RUN useradd -m -p "$(openssl passwd pass1)" -G sudo user1
+
+# RUN DEBIAN_FRONTEND=noninteractive && \
+#     apt install -y \
+#         apt-utils beef bsdgames bsdmainutils ca-certificates clang \
+# 	cowsay cpio cron curl dmidecode dmsetup g++ gcc gdbm-l10n git  \
+# 	hexedit  ifupdown init logrotate lsb-base lshw lua50 luajit lynx make \
+# 	nano netbase nodejs openssl procps python3 python3-cryptography \
+# 	python3-jinja2 python3-numpy python3-pandas python3-pip python3-scipy \
+# 	python3-six python3-yaml readline-common rsyslog ruby sensible-utils \
+# 	ssh systemd systemd-sysv tasksel tasksel-data udev vim wget whiptail \
+# 	xxd iptables isc-dhcp-client isc-dhcp-common kmod less netcat-openbsd
+# 
+# # Make a user, then copy over the /example directory
+# RUN useradd -m user && echo "user:password" | chpasswd
+# COPY --chown=user:user ./examples /home/user/examples
+# RUN chmod -R +x  /home/user/examples/lua
+# RUN echo 'root:password' | chpasswd
+# CMD [ "/bin/bash" ]
